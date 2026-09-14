@@ -4,7 +4,8 @@ namespace UpgradeQueue
 {
     /// <summary>
     /// Number of level-up upgrades waiting to be picked. Choices are rolled when a queued
-    /// upgrade is opened, so only the count is stored.
+    /// upgrade is first opened, so only the count is stored here; choices of an upgrade put back
+    /// without picking are kept by QueuedUpgradeSession.
     /// </summary>
     internal static class QueueState
     {

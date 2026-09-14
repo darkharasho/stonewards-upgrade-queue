@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Closing a queued upgrade without picking keeps its choices, so reopening it is no longer a free reroll.
+
 ## 0.1.2
 
 - `PingIntensity` setting (0.25–2) scales how far, bright and thick the level-up ping is.

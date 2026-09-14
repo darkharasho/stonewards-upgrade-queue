@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
@@ -7,7 +8,8 @@ namespace UpgradeQueue
     /// <summary>
     /// Opens a queued upgrade in the game's own RogueLikeUpgradeMenu, outside of any network
     /// upgrade phase. Choices are rolled on open with the game's GenerateThreeChoices, and the
-    /// pick is applied by the menu's normal hide routine.
+    /// pick is applied by the menu's normal hide routine. An upgrade put back without picking
+    /// keeps its choices, so closing and reopening is not a free reroll.
     /// </summary>
     internal static class QueuedUpgradeSession
     {
@@ -44,6 +46,12 @@ namespace UpgradeQueue
         // the chain stops.
         private static bool _puttingBack;
 
+        // Choices currently on the open screen, updated by the menu's own rerolls.
+        private static List<RogueLikeUpgradeManager.UpgradeDraftChoice> _shownChoices;
+
+        // Choices of the put-back upgrade at the front of the queue, shown again when it reopens.
+        private static List<RogueLikeUpgradeManager.UpgradeDraftChoice> _savedChoices;
+
         /// <summary>
         /// Hotkey: opens the next queued upgrade, or closes the open one if nothing is picked yet.
         /// </summary>
@@ -79,6 +87,7 @@ namespace UpgradeQueue
                 _menu.StopCoroutine(hide);
             HideCoroutine(_menu) = _menu.StartCoroutine((IEnumerator)HideUpgradeScreen.Invoke(_menu, null));
 
+            _savedChoices = _shownChoices;
             QueueState.Enqueue();
             Plugin.Log.LogInfo($"Closed queued upgrade without picking ({QueueState.PendingCount} pending)");
         }
@@ -134,7 +143,9 @@ namespace UpgradeQueue
             _puttingBack = false;
             try
             {
-                OnUpgradeDraftGenerated.Invoke(menu, new object[] { manager.GenerateThreeChoices() });
+                var choices = _savedChoices ?? manager.GenerateThreeChoices();
+                _savedChoices = null;
+                OnUpgradeDraftGenerated.Invoke(menu, new object[] { choices });
             }
             finally
             {
@@ -167,6 +178,8 @@ namespace UpgradeQueue
             IsOpening = false;
             _puttingBack = false;
             _menu = null;
+            _shownChoices = null;
+            _savedChoices = null;
         }
 
         private static bool IsSolo()
@@ -191,6 +204,19 @@ namespace UpgradeQueue
             }
         }
 
+        // Opening and the menu's reroll both fill the cards through Setup, so this tracks what the
+        // player is looking at.
+        [HarmonyPatch(typeof(UpgradePopupController), nameof(UpgradePopupController.Setup),
+            new[] { typeof(List<RogueLikeUpgradeManager.UpgradeDraftChoice>) })]
+        private static class TrackShownChoicesPatch
+        {
+            private static void Postfix(List<RogueLikeUpgradeManager.UpgradeDraftChoice> upgradeDraftChoices)
+            {
+                if (IsOpen && !_puttingBack)
+                    _shownChoices = new List<RogueLikeUpgradeManager.UpgradeDraftChoice>(upgradeDraftChoices);
+            }
+        }
+
         // HideUpgradeScreen applies the pick and then calls Close(), which ends the session. With
         // PickAllInARow the next queued upgrade opens a frame later, once the menu has restored input.
         [HarmonyPatch(typeof(BaseMenu), nameof(BaseMenu.Close))]
@@ -205,6 +231,7 @@ namespace UpgradeQueue
                 IsOpen = false;
                 _puttingBack = false;
                 _menu = null;
+                _shownChoices = null;
                 if (chain)
                     Plugin.Instance.StartCoroutine(OpenNextFrame());
             }
