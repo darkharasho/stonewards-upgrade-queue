@@ -31,6 +31,7 @@ namespace UpgradeQueue
         private const float PingRingDuration = 1.1f;
         private const float PingSpread = 26f;
         private const float PingStartAlpha = 0.85f;
+        private const float PingRingWidth = 2f;
         private const float CornerRadius = 8f;
         private static readonly Color Gold = new Color(1f, 0.82f, 0.45f);
 
@@ -114,7 +115,6 @@ namespace UpgradeQueue
                 var ring = new VisualElement { name = "UpgradeQueuePingRing", pickingMode = PickingMode.Ignore };
                 var rs = ring.style;
                 rs.position = Position.Absolute;
-                rs.borderTopWidth = rs.borderBottomWidth = rs.borderLeftWidth = rs.borderRightWidth = 2f;
                 rs.display = DisplayStyle.None;
                 _button.Add(ring);
                 _rings[i] = ring;
@@ -135,6 +135,9 @@ namespace UpgradeQueue
         private static void UpdatePing()
         {
             var elapsed = Time.unscaledTime - _pingStart;
+            // Intensity scales spread, brightness and ring thickness together.
+            var intensity = Mathf.Clamp(Plugin.PingIntensity.Value, 0.25f, 2f);
+            var ringWidth = Mathf.Max(1f, PingRingWidth * intensity);
             for (var i = 0; i < PingRings; i++)
             {
                 var ring = _rings[i];
@@ -147,11 +150,13 @@ namespace UpgradeQueue
 
                 // Ease out: rings move fast at first and settle as they fade.
                 var eased = 1f - (1f - t) * (1f - t) * (1f - t);
-                var spread = PingSpread * eased;
-                var color = new Color(Gold.r, Gold.g, Gold.b, PingStartAlpha * (1f - t) * (1f - t));
+                var spread = PingSpread * intensity * eased;
+                var startAlpha = Mathf.Min(1f, PingStartAlpha * intensity);
+                var color = new Color(Gold.r, Gold.g, Gold.b, startAlpha * (1f - t) * (1f - t));
 
                 var rs = ring.style;
                 rs.display = DisplayStyle.Flex;
+                rs.borderTopWidth = rs.borderBottomWidth = rs.borderLeftWidth = rs.borderRightWidth = ringWidth;
                 // Offsets are from the button's padding box; start on its 2px border.
                 rs.left = rs.right = rs.top = rs.bottom = -2f - spread;
                 rs.borderTopLeftRadius = rs.borderTopRightRadius = rs.borderBottomLeftRadius = rs.borderBottomRightRadius = CornerRadius + spread;

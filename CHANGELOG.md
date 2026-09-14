@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `PingIntensity` setting (0.25–2) scales how far, bright and thick the level-up ping is.
+
 ## 0.1.1
 
 - Queued upgrades open one after another until the queue is empty (`PickAllInARow`, on by default).

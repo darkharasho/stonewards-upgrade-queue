@@ -30,6 +30,7 @@ Edit in r2modman under **Config editor** → `com.darkharasho.stonewards.upgrade
 | Controls → OpenQueueKey | `U` | Opens queued upgrades, or closes the screen before you pick. Modifiers work, e.g. `U + LeftShift`. |
 | HUD → ShowCounter | `true` | Show the queued upgrade counter and inventory button. |
 | HUD → PingOnLevelUp | `true` | Sonar ping animation around the counter when a level-up is queued. |
+| HUD → PingIntensity | `1` | Ping strength from `0.25` (subtle) to `2` (bold): how far, bright and thick the rings are. |
 | HUD → CounterPosition | `TopRight` | `TopLeft`, `TopRight`, `BottomLeft` or `BottomRight`. |
 | HUD → CounterOffsetX / CounterOffsetY | `0` | Nudge the counter away from its corner, in UI pixels, if it overlaps other HUD elements. |
 
