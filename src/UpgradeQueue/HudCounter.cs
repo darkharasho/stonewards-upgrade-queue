@@ -25,8 +25,19 @@ namespace UpgradeQueue
         private const float IconSize = 28f;
         private const string IconResource = "UpgradeQueue.counter-icon.png";
 
+        // Sonar ping on a new queued level-up: rings spread out from the counter and fade.
+        private const int PingRings = 2;
+        private const float PingRingDelay = 0.35f;
+        private const float PingRingDuration = 1.1f;
+        private const float PingSpread = 26f;
+        private const float PingStartAlpha = 0.85f;
+        private const float CornerRadius = 8f;
+        private static readonly Color Gold = new Color(1f, 0.82f, 0.45f);
+
         private static Button _button;
         private static Label _label;
+        private static readonly VisualElement[] _rings = new VisualElement[PingRings];
+        private static float _pingStart = float.NegativeInfinity;
         private static Hud _attachedHud;
         private static Texture2D _icon;
         private static bool _iconLoadAttempted;
@@ -49,6 +60,8 @@ namespace UpgradeQueue
             _button.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             if (!visible)
                 return;
+
+            UpdatePing();
 
             var text = inInventory
                 ? $"Open upgrade ({QueueState.PendingCount})"
@@ -96,9 +109,54 @@ namespace UpgradeQueue
             _label.style.paddingLeft = _label.style.paddingRight = _label.style.paddingTop = _label.style.paddingBottom = 0f;
             _button.Add(_label);
 
+            for (var i = 0; i < PingRings; i++)
+            {
+                var ring = new VisualElement { name = "UpgradeQueuePingRing", pickingMode = PickingMode.Ignore };
+                var rs = ring.style;
+                rs.position = Position.Absolute;
+                rs.borderTopWidth = rs.borderBottomWidth = rs.borderLeftWidth = rs.borderRightWidth = 2f;
+                rs.display = DisplayStyle.None;
+                _button.Add(ring);
+                _rings[i] = ring;
+            }
+
             hud.hudDocument.rootVisualElement.Add(_button);
             _button.BringToFront();
             _attachedHud = hud;
+        }
+
+        /// <summary>Starts a ping. Uses unscaled time so it also plays while the game is paused.</summary>
+        public static void Ping()
+        {
+            if (Plugin.PingOnLevelUp.Value)
+                _pingStart = Time.unscaledTime;
+        }
+
+        private static void UpdatePing()
+        {
+            var elapsed = Time.unscaledTime - _pingStart;
+            for (var i = 0; i < PingRings; i++)
+            {
+                var ring = _rings[i];
+                var t = (elapsed - i * PingRingDelay) / PingRingDuration;
+                if (t < 0f || t >= 1f)
+                {
+                    ring.style.display = DisplayStyle.None;
+                    continue;
+                }
+
+                // Ease out: rings move fast at first and settle as they fade.
+                var eased = 1f - (1f - t) * (1f - t) * (1f - t);
+                var spread = PingSpread * eased;
+                var color = new Color(Gold.r, Gold.g, Gold.b, PingStartAlpha * (1f - t) * (1f - t));
+
+                var rs = ring.style;
+                rs.display = DisplayStyle.Flex;
+                // Offsets are from the button's padding box; start on its 2px border.
+                rs.left = rs.right = rs.top = rs.bottom = -2f - spread;
+                rs.borderTopLeftRadius = rs.borderTopRightRadius = rs.borderBottomLeftRadius = rs.borderBottomRightRadius = CornerRadius + spread;
+                rs.borderTopColor = rs.borderBottomColor = rs.borderLeftColor = rs.borderRightColor = color;
+            }
         }
 
         // Loaded once and kept across scene loads; the counter falls back to text only if it fails.

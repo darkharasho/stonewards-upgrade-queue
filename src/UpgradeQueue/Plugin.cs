@@ -17,7 +17,9 @@ namespace UpgradeQueue
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<KeyboardShortcut> OpenQueueKey;
         internal static ConfigEntry<bool> PauseInSolo;
+        internal static ConfigEntry<bool> PickAllInARow;
         internal static ConfigEntry<bool> ShowCounter;
+        internal static ConfigEntry<bool> PingOnLevelUp;
         internal static ConfigEntry<CounterCorner> CounterPosition;
         internal static ConfigEntry<int> CounterOffsetX;
         internal static ConfigEntry<int> CounterOffsetY;
@@ -30,20 +32,36 @@ namespace UpgradeQueue
             Log = Logger;
             Instance = this;
 
-            Enabled = Config.Bind("General", "Enabled", true,
-                "Queue level-up upgrade popups instead of opening them immediately.");
-            OpenQueueKey = Config.Bind("Controls", "OpenQueueKey", new KeyboardShortcut(KeyCode.U),
-                "Key that opens the next queued upgrade.");
-            PauseInSolo = Config.Bind("General", "PauseInSolo", true,
-                "Pause the game while picking a queued upgrade in single player. Never pauses in multiplayer.");
-            ShowCounter = Config.Bind("HUD", "ShowCounter", true,
-                "Show the queued upgrade counter. In the inventory it becomes a button that opens the next upgrade.");
-            CounterPosition = Config.Bind("HUD", "CounterPosition", CounterCorner.TopRight,
-                "Screen corner for the queued upgrade counter.");
-            CounterOffsetX = Config.Bind("HUD", "CounterOffsetX", 0,
-                "Extra horizontal distance, in UI pixels, from the counter's corner. Negative moves it toward the edge.");
-            CounterOffsetY = Config.Bind("HUD", "CounterOffsetY", 0,
-                "Extra vertical distance, in UI pixels, from the counter's corner. Increase to move it clear of other HUD elements.");
+            // Display names and order are for the in-game ModSettings menu; they don't change the .cfg.
+            Enabled = Config.Bind("General", "Enabled", true, new ConfigDescription(
+                "Queue level-up upgrade popups instead of opening them immediately.", null,
+                new ConfigurationManagerAttributes { DispName = "Queue upgrades", Order = 20 }));
+            PickAllInARow = Config.Bind("General", "PickAllInARow", true, new ConfigDescription(
+                "After picking a queued upgrade, open the next one right away until the queue is empty. Press the open key again to stop and keep the rest queued.", null,
+                new ConfigurationManagerAttributes { DispName = "Pick all queued upgrades in a row", Order = 15 }));
+            PauseInSolo = Config.Bind("General", "PauseInSolo", true, new ConfigDescription(
+                "Pause the game while picking a queued upgrade in single player. Never pauses in multiplayer.", null,
+                new ConfigurationManagerAttributes { DispName = "Pause while picking (single player)", Order = 10 }));
+            OpenQueueKey = Config.Bind("Controls", "OpenQueueKey", new KeyboardShortcut(KeyCode.U), new ConfigDescription(
+                "Key that opens the next queued upgrade. Press it again before picking to close the screen and keep the upgrade queued.", null,
+                new ConfigurationManagerAttributes { DispName = "Open / close queued upgrade" }));
+            ShowCounter = Config.Bind("HUD", "ShowCounter", true, new ConfigDescription(
+                "Show the queued upgrade counter. In the inventory it becomes a button that opens the next upgrade.", null,
+                new ConfigurationManagerAttributes { DispName = "Show counter", Order = 40 }));
+            PingOnLevelUp = Config.Bind("HUD", "PingOnLevelUp", true, new ConfigDescription(
+                "Play a sonar ping animation around the counter when a level-up is queued.", null,
+                new ConfigurationManagerAttributes { DispName = "Ping on new level-up", Order = 35 }));
+            CounterPosition = Config.Bind("HUD", "CounterPosition", CounterCorner.TopRight, new ConfigDescription(
+                "Screen corner for the queued upgrade counter.", null,
+                new ConfigurationManagerAttributes { DispName = "Counter corner", Order = 30 }));
+            CounterOffsetX = Config.Bind("HUD", "CounterOffsetX", 0, new ConfigDescription(
+                "Extra horizontal distance, in UI pixels, from the counter's corner. Negative moves it toward the edge.",
+                new AcceptableValueRange<int>(-500, 500),
+                new ConfigurationManagerAttributes { DispName = "Counter offset X", Order = 20 }));
+            CounterOffsetY = Config.Bind("HUD", "CounterOffsetY", 0, new ConfigDescription(
+                "Extra vertical distance, in UI pixels, from the counter's corner. Increase to move it clear of other HUD elements.",
+                new AcceptableValueRange<int>(-500, 500),
+                new ConfigurationManagerAttributes { DispName = "Counter offset Y", Order = 10 }));
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);
@@ -54,7 +72,7 @@ namespace UpgradeQueue
         private void Update()
         {
             if (Hotkey.WasPressed(OpenQueueKey.Value))
-                QueuedUpgradeSession.RequestOpen();
+                QueuedUpgradeSession.Toggle();
 
             HudCounter.Update();
         }

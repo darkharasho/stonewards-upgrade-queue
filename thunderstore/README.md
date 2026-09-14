@@ -6,8 +6,9 @@ Choices, odds and results are the game's own: the three options are rolled with 
 
 ## How to use
 
-- A counter in the corner of the HUD shows how many upgrades are waiting, e.g. `Upgrades: 3  [U]`.
-- Press **U** to open the next queued upgrade and pick as usual. Queued picks have no timer.
+- A counter in the corner of the HUD shows how many upgrades are waiting, e.g. `Upgrades: 3  [U]`. It gives a gentle sonar ping when a new level-up is queued.
+- Press **U** to open your queued upgrades and pick as usual. After each pick the next one opens, until the queue is empty. Queued picks have no timer.
+- Press **U** again before picking to close the screen. That upgrade and the rest stay queued.
 - With the inventory open, the counter becomes an **Open upgrade** button you can click.
 - Queued upgrades last for the current run. They are cleared when the run ends, including if you disconnect.
 
@@ -24,9 +25,11 @@ Edit in r2modman under **Config editor** → `com.darkharasho.stonewards.upgrade
 | Setting | Default | Description |
 | --- | --- | --- |
 | General → Enabled | `true` | Queue level-up popups. Turn off for normal popups. |
+| General → PickAllInARow | `true` | Open the next queued upgrade right after each pick. Turn off to open one per key press. |
 | General → PauseInSolo | `true` | Pause while picking a queued upgrade in single player. |
-| Controls → OpenQueueKey | `U` | Key that opens the next queued upgrade. Modifiers work, e.g. `U + LeftShift`. |
+| Controls → OpenQueueKey | `U` | Opens queued upgrades, or closes the screen before you pick. Modifiers work, e.g. `U + LeftShift`. |
 | HUD → ShowCounter | `true` | Show the queued upgrade counter and inventory button. |
+| HUD → PingOnLevelUp | `true` | Sonar ping animation around the counter when a level-up is queued. |
 | HUD → CounterPosition | `TopRight` | `TopLeft`, `TopRight`, `BottomLeft` or `BottomRight`. |
 | HUD → CounterOffsetX / CounterOffsetY | `0` | Nudge the counter away from its corner, in UI pixels, if it overlaps other HUD elements. |
 

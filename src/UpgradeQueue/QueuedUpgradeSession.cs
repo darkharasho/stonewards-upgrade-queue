@@ -17,14 +17,71 @@ namespace UpgradeQueue
         private static readonly System.Reflection.MethodInfo OnUpgradeDraftGenerated =
             AccessTools.Method(typeof(RogueLikeUpgradeMenu), "OnUpgradeDraftGenerated");
 
+        private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, Coroutine> HideCoroutine =
+            AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, Coroutine>("hideCoroutine");
+
+        private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, Coroutine> RerollCoroutine =
+            AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, Coroutine>("_rerollCoroutine");
+
         private static readonly System.Reflection.MethodInfo OnScreenClosed =
             AccessTools.Method(typeof(RogueLikeUpgradeMenu), "OnScreenClosed");
+
+        private static readonly System.Reflection.MethodInfo HideUpgradeScreen =
+            AccessTools.Method(typeof(RogueLikeUpgradeMenu), "HideUpgradeScreen");
+
+        private static readonly System.Reflection.MethodInfo EnableOptions =
+            AccessTools.Method(typeof(RogueLikeUpgradeMenu), "EnableOptions");
 
         /// <summary>True from opening a queued upgrade until the menu closes after applying it.</summary>
         public static bool IsOpen { get; private set; }
 
         /// <summary>Set while this class drives the menu, so the intercept patch lets it through.</summary>
         public static bool IsOpening { get; private set; }
+
+        private static RogueLikeUpgradeMenu _menu;
+
+        // The open screen is closing without a pick, so the upgrade went back in the queue and
+        // the chain stops.
+        private static bool _puttingBack;
+
+        /// <summary>
+        /// Hotkey: opens the next queued upgrade, or closes the open one if nothing is picked yet.
+        /// </summary>
+        public static void Toggle()
+        {
+            if (IsOpen)
+                PutBack();
+            else
+                RequestOpen();
+        }
+
+        /// <summary>
+        /// Closes the open queued upgrade without picking and returns it to the queue. Ignored once
+        /// a choice is made or the screen is already closing.
+        /// </summary>
+        public static void PutBack()
+        {
+            if (!IsOpen || _puttingBack || _menu == null || _menu.IsUpgradeSelected)
+                return;
+
+            _puttingBack = true;
+            EnableOptions.Invoke(_menu, new object[] { false });
+            var reroll = RerollCoroutine(_menu);
+            if (reroll != null)
+            {
+                _menu.StopCoroutine(reroll);
+                RerollCoroutine(_menu) = null;
+            }
+
+            // The menu's own hide routine; with nothing selected it applies no upgrade.
+            var hide = HideCoroutine(_menu);
+            if (hide != null)
+                _menu.StopCoroutine(hide);
+            HideCoroutine(_menu) = _menu.StartCoroutine((IEnumerator)HideUpgradeScreen.Invoke(_menu, null));
+
+            QueueState.Enqueue();
+            Plugin.Log.LogInfo($"Closed queued upgrade without picking ({QueueState.PendingCount} pending)");
+        }
 
         /// <summary>
         /// Opens the next queued upgrade from gameplay, or from the inventory by closing it first.
@@ -73,6 +130,8 @@ namespace UpgradeQueue
 
             IsOpen = true;
             IsOpening = true;
+            _menu = menu;
+            _puttingBack = false;
             try
             {
                 OnUpgradeDraftGenerated.Invoke(menu, new object[] { manager.GenerateThreeChoices() });
@@ -106,6 +165,8 @@ namespace UpgradeQueue
         {
             IsOpen = false;
             IsOpening = false;
+            _puttingBack = false;
+            _menu = null;
         }
 
         private static bool IsSolo()
@@ -119,6 +180,10 @@ namespace UpgradeQueue
         [HarmonyPatch(typeof(RogueLikeUpgradeMenu), "OnUpgradeClicked")]
         private static class CloseOnPickPatch
         {
+            // The menu re-enables its options on a timer after opening, so a closing screen can
+            // still be clicked. A pick there would apply an upgrade that is already back in the queue.
+            private static bool Prefix() => !_puttingBack;
+
             private static void Postfix(RogueLikeUpgradeMenu __instance)
             {
                 if (IsOpen && __instance.IsUpgradeSelected)
@@ -126,14 +191,22 @@ namespace UpgradeQueue
             }
         }
 
-        // HideUpgradeScreen applies the pick and then calls Close(), which ends the session.
+        // HideUpgradeScreen applies the pick and then calls Close(), which ends the session. With
+        // PickAllInARow the next queued upgrade opens a frame later, once the menu has restored input.
         [HarmonyPatch(typeof(BaseMenu), nameof(BaseMenu.Close))]
         private static class EndSessionOnClosePatch
         {
             private static void Postfix(BaseMenu __instance)
             {
-                if (IsOpen && __instance is RogueLikeUpgradeMenu)
-                    IsOpen = false;
+                if (!IsOpen || !(__instance is RogueLikeUpgradeMenu))
+                    return;
+
+                var chain = !_puttingBack && Plugin.PickAllInARow.Value && QueueState.PendingCount > 0;
+                IsOpen = false;
+                _puttingBack = false;
+                _menu = null;
+                if (chain)
+                    Plugin.Instance.StartCoroutine(OpenNextFrame());
             }
         }
     }

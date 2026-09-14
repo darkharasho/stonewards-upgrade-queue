@@ -37,6 +37,7 @@ namespace UpgradeQueue.Patches
             }
 
             QueueState.Enqueue();
+            HudCounter.Ping();
             Plugin.Log.LogInfo($"Queued level-up upgrade ({QueueState.PendingCount} pending)");
 
             // On the host this runs inside NetworkHelper.StartRogueUpgradePhase while it is still
