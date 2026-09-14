@@ -11,7 +11,7 @@ namespace UpgradeQueue
     {
         public const string PluginGuid = "com.darkharasho.stonewards.upgradequeue";
         public const string PluginName = "UpgradeQueue";
-        public const string PluginVersion = "0.1.6";
+        public const string PluginVersion = "0.1.7";
 
         internal static ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -85,6 +85,7 @@ namespace UpgradeQueue
             if (Hotkey.WasPressed(OpenQueueKey.Value))
                 QueuedUpgradeSession.Toggle();
 
+            QueuedUpgradeSession.RefreshCardText();
             HudCounter.Update();
         }
 

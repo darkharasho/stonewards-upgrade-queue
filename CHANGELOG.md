@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+
+- Fixed upgrade cards showing old stat values, such as `20.2x > 20.5x` twice in a row, when you picked the same upgrade again while going through the queue in multiplayer. The cards and stats panel now update once the host applies your previous pick.
+
 ## 0.1.6
 
 - New `IdlePing` setting, on by default: while upgrades are queued, a faint ping repeats around the counter every few seconds as a reminder. Turn it off in the HUD settings.

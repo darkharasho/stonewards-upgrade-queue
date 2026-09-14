@@ -44,6 +44,18 @@ namespace UpgradeQueue
         private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, RogueLikeUpgradeManager.UpgradeDraftChoice> SelectedUpgrade =
             AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, RogueLikeUpgradeManager.UpgradeDraftChoice>("selectedUpgrade");
 
+        private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, UpgradePopupController> PopupController =
+            AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, UpgradePopupController>("upgradePopupController");
+
+        private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, StatsPopupController> StatsController =
+            AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, StatsPopupController>("statsController");
+
+        private static readonly AccessTools.FieldRef<UpgradePopupController.UpgradeButton, Label> DescriptionLabel =
+            AccessTools.FieldRefAccess<UpgradePopupController.UpgradeButton, Label>("descriptionLabel");
+
+        private const float CardRefreshInterval = 0.2f;
+        private static float _nextCardRefresh;
+
         /// <summary>True from opening a queued upgrade until the menu closes after applying it.</summary>
         public static bool IsOpen { get; private set; }
 
@@ -254,6 +266,36 @@ namespace UpgradeQueue
             _menu = null;
             _shownChoices = null;
             _savedChoices = null;
+        }
+
+        /// <summary>
+        /// Keeps the open cards' "current > next" values up to date. A pick changes the player's
+        /// stats only when the host applies it and syncs back, which in multiplayer lands after the
+        /// next queued upgrade has already filled its cards from the old stats.
+        /// </summary>
+        public static void RefreshCardText()
+        {
+            if (!IsOpen || _puttingBack || _menu == null || _menu.IsUpgradeSelected)
+                return;
+            if (Time.unscaledTime < _nextCardRefresh)
+                return;
+            _nextCardRefresh = Time.unscaledTime + CardRefreshInterval;
+
+            var popup = PopupController(_menu);
+            if (popup == null)
+                return;
+            foreach (var button in popup.UpgradeButtons)
+            {
+                var choice = button.DraftChoice;
+                var label = DescriptionLabel(button);
+                if (choice.Upgrade == null || label == null)
+                    continue;
+                // Same text the game builds in UpgradeButton.Setup.
+                var text = "<line-height=70%>" + choice.Upgrade.GetLocalizedDescriptionWithRarity(choice.Rarity);
+                if (label.text != text)
+                    label.text = text;
+            }
+            StatsController(_menu)?.RefreshStatsUI();
         }
 
         private static bool IsSolo()
