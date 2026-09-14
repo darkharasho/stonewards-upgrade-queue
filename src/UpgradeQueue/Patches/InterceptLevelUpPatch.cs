@@ -19,13 +19,22 @@ namespace UpgradeQueue.Patches
 
         private static bool Prefix(RogueLikeUpgradeMenu __instance, List<RogueLikeUpgradeManager.UpgradeDraftChoice> upgradeDraftChoices)
         {
-            if (!Plugin.Enabled.Value)
+            if (QueuedUpgradeSession.IsOpening)
+                return true;
+
+            // Queueing can't be turned off mid-session: the menu is busy with a queued pick.
+            if (!Plugin.Enabled.Value && !QueuedUpgradeSession.IsOpen)
                 return true;
 
             // The menu only resets these when it opens. If a previous pick is still stored, the
             // server's close event for this phase would make OnScreenClosed apply it a second time.
-            SelectedUpgrade(__instance) = default;
-            HasSkip(__instance) = false;
+            // While a queued pick is open the stored pick is live and must be left alone; the close
+            // event then just re-runs the hide routine, which applies it once.
+            if (!QueuedUpgradeSession.IsOpen)
+            {
+                SelectedUpgrade(__instance) = default;
+                HasSkip(__instance) = false;
+            }
 
             QueueState.Enqueue();
             Plugin.Log.LogInfo($"Queued level-up upgrade ({QueueState.PendingCount} pending)");

@@ -1,4 +1,3 @@
-using System;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -20,7 +19,6 @@ namespace UpgradeQueue
         internal static ConfigEntry<bool> PauseInSolo;
 
         private Harmony _harmony;
-        private bool _loggedInputBackend;
 
         private void Awake()
         {
@@ -41,21 +39,8 @@ namespace UpgradeQueue
 
         private void Update()
         {
-            if (_loggedInputBackend)
-                return;
-            _loggedInputBackend = true;
-
-            // Discovery: KeyboardShortcut relies on the legacy Input manager, which throws if the
-            // build is set to "Input System Package (New)" only.
-            try
-            {
-                Input.GetKeyDown(KeyCode.None);
-                Log.LogInfo("Legacy Input manager is available; KeyboardShortcut hotkeys will work.");
-            }
-            catch (InvalidOperationException)
-            {
-                Log.LogWarning("Legacy Input manager is disabled; hotkeys must use the Input System package.");
-            }
+            if (Hotkey.WasPressed(OpenQueueKey.Value))
+                QueuedUpgradeSession.TryOpen();
         }
 
         private void OnDestroy()
