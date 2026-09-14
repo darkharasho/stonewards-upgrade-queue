@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- New `IdlePing` setting, on by default: while upgrades are queued, a faint ping repeats around the counter every few seconds as a reminder. Turn it off in the HUD settings.
+
 ## 0.1.5
 
 - Queued upgrades now survive a crash or disconnect. When you rejoin the same run, they come back with the choices you had rolled. The queue is saved to `BepInEx/config/UpgradeQueue.rejoin.txt` and is only restored if it matches the run you rejoined.

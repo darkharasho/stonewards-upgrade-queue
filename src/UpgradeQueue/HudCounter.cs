@@ -32,6 +32,10 @@ namespace UpgradeQueue
         private const float PingSpread = 26f;
         private const float PingStartAlpha = 0.85f;
         private const float PingRingWidth = 2f;
+        // Reminder ping while upgrades are waiting: one fainter, shorter ring every few seconds.
+        private const float IdlePingInterval = 4f;
+        private const float IdlePingAlpha = 0.35f;
+        private const float IdlePingSpread = 0.6f;
         private const float CornerRadius = 8f;
         private static readonly Color Gold = new Color(1f, 0.82f, 0.45f);
 
@@ -134,34 +138,57 @@ namespace UpgradeQueue
 
         private static void UpdatePing()
         {
-            var elapsed = Time.unscaledTime - _pingStart;
+            var now = Time.unscaledTime;
+            var pingLength = (PingRings - 1) * PingRingDelay + PingRingDuration;
             // Intensity scales spread, brightness and ring thickness together.
             var intensity = Mathf.Clamp(Plugin.PingIntensity.Value, 0.25f, 2f);
-            var ringWidth = Mathf.Max(1f, PingRingWidth * intensity);
-            for (var i = 0; i < PingRings; i++)
+
+            var elapsed = now - _pingStart;
+            if (elapsed < pingLength)
             {
-                var ring = _rings[i];
-                var t = (elapsed - i * PingRingDelay) / PingRingDuration;
-                if (t < 0f || t >= 1f)
-                {
-                    ring.style.display = DisplayStyle.None;
-                    continue;
-                }
-
-                // Ease out: rings move fast at first and settle as they fade.
-                var eased = 1f - (1f - t) * (1f - t) * (1f - t);
-                var spread = PingSpread * intensity * eased;
-                var startAlpha = Mathf.Min(1f, PingStartAlpha * intensity);
-                var color = new Color(Gold.r, Gold.g, Gold.b, startAlpha * (1f - t) * (1f - t));
-
-                var rs = ring.style;
-                rs.display = DisplayStyle.Flex;
-                rs.borderTopWidth = rs.borderBottomWidth = rs.borderLeftWidth = rs.borderRightWidth = ringWidth;
-                // Offsets are from the button's padding box; start on its 2px border.
-                rs.left = rs.right = rs.top = rs.bottom = -2f - spread;
-                rs.borderTopLeftRadius = rs.borderTopRightRadius = rs.borderBottomLeftRadius = rs.borderBottomRightRadius = CornerRadius + spread;
-                rs.borderTopColor = rs.borderBottomColor = rs.borderLeftColor = rs.borderRightColor = color;
+                for (var i = 0; i < PingRings; i++)
+                    DrawRing(_rings[i], (elapsed - i * PingRingDelay) / PingRingDuration, intensity, 1f, 1f);
+                return;
             }
+
+            for (var i = 1; i < PingRings; i++)
+                _rings[i].style.display = DisplayStyle.None;
+
+            if (!Plugin.IdlePing.Value)
+            {
+                _rings[0].style.display = DisplayStyle.None;
+                return;
+            }
+
+            // While upgrades wait, a single faint ring repeats, the first one a full interval
+            // after the last level-up ping so the two don't run together.
+            var since = float.IsInfinity(elapsed) ? now : elapsed - pingLength;
+            var phase = since % IdlePingInterval;
+            var t = (phase - (IdlePingInterval - PingRingDuration)) / PingRingDuration;
+            DrawRing(_rings[0], t, intensity, IdlePingAlpha, IdlePingSpread);
+        }
+
+        private static void DrawRing(VisualElement ring, float t, float intensity, float alphaScale, float spreadScale)
+        {
+            if (t < 0f || t >= 1f)
+            {
+                ring.style.display = DisplayStyle.None;
+                return;
+            }
+
+            // Ease out: rings move fast at first and settle as they fade.
+            var eased = 1f - (1f - t) * (1f - t) * (1f - t);
+            var spread = PingSpread * intensity * spreadScale * eased;
+            var startAlpha = Mathf.Min(1f, PingStartAlpha * intensity) * alphaScale;
+            var color = new Color(Gold.r, Gold.g, Gold.b, startAlpha * (1f - t) * (1f - t));
+
+            var rs = ring.style;
+            rs.display = DisplayStyle.Flex;
+            rs.borderTopWidth = rs.borderBottomWidth = rs.borderLeftWidth = rs.borderRightWidth = Mathf.Max(1f, PingRingWidth * intensity);
+            // Offsets are from the button's padding box; start on its 2px border.
+            rs.left = rs.right = rs.top = rs.bottom = -2f - spread;
+            rs.borderTopLeftRadius = rs.borderTopRightRadius = rs.borderBottomLeftRadius = rs.borderBottomRightRadius = CornerRadius + spread;
+            rs.borderTopColor = rs.borderBottomColor = rs.borderLeftColor = rs.borderRightColor = color;
         }
 
         // Loaded once and kept across scene loads; the counter falls back to text only if it fails.

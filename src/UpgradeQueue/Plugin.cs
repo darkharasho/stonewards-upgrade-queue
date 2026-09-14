@@ -11,7 +11,7 @@ namespace UpgradeQueue
     {
         public const string PluginGuid = "com.darkharasho.stonewards.upgradequeue";
         public const string PluginName = "UpgradeQueue";
-        public const string PluginVersion = "0.1.5";
+        public const string PluginVersion = "0.1.6";
 
         internal static ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -20,6 +20,7 @@ namespace UpgradeQueue
         internal static ConfigEntry<bool> PickAllInARow;
         internal static ConfigEntry<bool> ShowCounter;
         internal static ConfigEntry<bool> PingOnLevelUp;
+        internal static ConfigEntry<bool> IdlePing;
         internal static ConfigEntry<float> PingIntensity;
         internal static ConfigEntry<CounterCorner> CounterPosition;
         internal static ConfigEntry<int> CounterOffsetX;
@@ -52,10 +53,13 @@ namespace UpgradeQueue
             PingOnLevelUp = Config.Bind("HUD", "PingOnLevelUp", true, new ConfigDescription(
                 "Play a sonar ping animation around the counter when a level-up is queued.", null,
                 new ConfigurationManagerAttributes { DispName = "Ping on new level-up", Order = 35 }));
+            IdlePing = Config.Bind("HUD", "IdlePing", true, new ConfigDescription(
+                "Keep a faint ping repeating around the counter every few seconds while upgrades are queued.", null,
+                new ConfigurationManagerAttributes { DispName = "Ping while upgrades wait", Order = 34 }));
             PingIntensity = Config.Bind("HUD", "PingIntensity", 1f, new ConfigDescription(
-                "Strength of the level-up ping. Scales how far the rings spread, how bright they are and how thick they are. 1 is the default.",
+                "Strength of the ping. Scales how far the rings spread, how bright they are and how thick they are. 1 is the default.",
                 new AcceptableValueRange<float>(0.25f, 2f),
-                new ConfigurationManagerAttributes { DispName = "Ping intensity", Order = 34 }));
+                new ConfigurationManagerAttributes { DispName = "Ping intensity", Order = 33 }));
             CounterPosition = Config.Bind("HUD", "CounterPosition", CounterCorner.TopRight, new ConfigDescription(
                 "Screen corner for the queued upgrade counter.", null,
                 new ConfigurationManagerAttributes { DispName = "Counter corner", Order = 30 }));
