@@ -25,8 +25,18 @@ namespace UpgradeQueue.Patches
         private static void Clear(string reason)
         {
             var dropped = QueueState.PendingCount;
-            QueueState.Clear();
-            QueuedUpgradeSession.Reset();
+            // A disconnect ends the run too; the saved queue stays for rejoining. QueueSnapshot
+            // deletes it when the run really ends.
+            QueueSnapshot.Paused = true;
+            try
+            {
+                QueueState.Clear();
+                QueuedUpgradeSession.Reset();
+            }
+            finally
+            {
+                QueueSnapshot.Paused = false;
+            }
             if (dropped > 0)
                 Plugin.Log.LogInfo($"{reason}; dropped {dropped} queued upgrade(s)");
         }

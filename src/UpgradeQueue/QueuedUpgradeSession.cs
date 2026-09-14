@@ -50,6 +50,18 @@ namespace UpgradeQueue
         /// <summary>Set while this class drives the menu, so the intercept patch lets it through.</summary>
         public static bool IsOpening { get; private set; }
 
+        /// <summary>Queued upgrades not yet applied, counting one open on screen.</summary>
+        public static int PendingIncludingOpen => QueueState.PendingCount + (IsOpen && !_puttingBack ? 1 : 0);
+
+        /// <summary>Choices the next queued upgrade will show, if already rolled.</summary>
+        public static List<RogueLikeUpgradeManager.UpgradeDraftChoice> FrontChoices =>
+            _savedChoices ?? (IsOpen && !_puttingBack ? _shownChoices : null);
+
+        public static void RestoreFrontChoices(List<RogueLikeUpgradeManager.UpgradeDraftChoice> choices)
+        {
+            _savedChoices = choices;
+        }
+
         private static RogueLikeUpgradeMenu _menu;
 
         // The open screen is closing without a pick, so the upgrade went back in the queue and
@@ -275,7 +287,10 @@ namespace UpgradeQueue
             private static void Postfix(List<RogueLikeUpgradeManager.UpgradeDraftChoice> upgradeDraftChoices)
             {
                 if (IsOpen && !_puttingBack)
+                {
                     _shownChoices = new List<RogueLikeUpgradeManager.UpgradeDraftChoice>(upgradeDraftChoices);
+                    QueueSnapshot.Save();
+                }
             }
         }
 
@@ -294,6 +309,7 @@ namespace UpgradeQueue
                 _puttingBack = false;
                 _menu = null;
                 _shownChoices = null;
+                QueueSnapshot.Save();
                 if (chain)
                     Plugin.Instance.StartCoroutine(OpenNextFrame());
             }

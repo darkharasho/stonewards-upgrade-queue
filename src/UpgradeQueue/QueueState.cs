@@ -28,6 +28,13 @@ namespace UpgradeQueue
             return true;
         }
 
+        /// <summary>Sets the count after rejoining a run.</summary>
+        public static void Restore(int count)
+        {
+            PendingCount = Math.Max(0, count);
+            Changed?.Invoke(PendingCount);
+        }
+
         public static void Clear()
         {
             if (PendingCount == 0)

@@ -10,7 +10,7 @@ Choices, odds and results are the game's own: the three options are rolled with 
 - Press **U** to open your queued upgrades and pick as usual. After each pick the next one opens, until the queue is empty. Queued picks have no timer.
 - Press **U** again before picking to close the screen. That upgrade and the rest stay queued.
 - With the inventory open, the counter becomes an **Open upgrade** button you can click.
-- Queued upgrades last for the current run. They are cleared when the run ends, including if you disconnect.
+- Queued upgrades last for the current run. They are cleared when the run ends. If you crash or disconnect in multiplayer, they come back when you rejoin the same run.
 
 ## Multiplayer
 

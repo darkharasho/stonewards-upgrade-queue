@@ -1,6 +1,6 @@
 {
     "name": "UpgradeQueue",
-    "version_number": "0.1.4",
+    "version_number": "0.1.5",
     "website_url": "https://github.com/darkharasho/stonewards-upgrade-queue",
     "description": "Queues level-up upgrade popups so they don't interrupt play. Open them later with a hotkey.",
     "dependencies": [

@@ -11,7 +11,7 @@ namespace UpgradeQueue
     {
         public const string PluginGuid = "com.darkharasho.stonewards.upgradequeue";
         public const string PluginName = "UpgradeQueue";
-        public const string PluginVersion = "0.1.4";
+        public const string PluginVersion = "0.1.5";
 
         internal static ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -67,6 +67,8 @@ namespace UpgradeQueue
                 "Extra vertical distance, in UI pixels, from the counter's corner. Increase to move it clear of other HUD elements.",
                 new AcceptableValueRange<int>(-500, 500),
                 new ConfigurationManagerAttributes { DispName = "Counter offset Y", Order = 10 }));
+
+            QueueSnapshot.Init();
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);

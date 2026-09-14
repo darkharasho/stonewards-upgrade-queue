@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Queued upgrades now survive a crash or disconnect. When you rejoin the same run, they come back with the choices you had rolled. The queue is saved to `BepInEx/config/UpgradeQueue.rejoin.txt` and is only restored if it matches the run you rejoined.
+
 ## 0.1.4
 
 - Fixed losing control of your character when the end-of-wave upgrade vote opened while a queued upgrade was on screen. The queued upgrade now closes first: a pick you already made is applied, otherwise it goes back in the queue with the same choices.
