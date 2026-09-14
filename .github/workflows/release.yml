@@ -50,6 +50,13 @@ jobs:
           else
             gh release create "$GITHUB_REF_NAME" "$zip" --title "UpgradeQueue $VERSION" --notes-file notes.md
           fi
+
+      # Skips versions already on Thunderstore, so re-pushing a tag is safe.
+      - name: Publish to Thunderstore
+        env:
+          THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+        run: scripts/thunderstore-publish.sh "dist/darkharasho-UpgradeQueue-$VERSION.zip" --community stonewards
+
       - uses: actions/upload-artifact@v4
         with:
           name: darkharasho-UpgradeQueue-${{ env.VERSION }}
