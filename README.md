@@ -9,6 +9,7 @@ Requires the .NET SDK, Stonewards, and an r2modman profile with BepInExPack 5.4.
 - `dotnet build src/UpgradeQueue/UpgradeQueue.csproj` builds the plugin and copies it into the r2modman profile's `BepInEx/plugins/darkharasho-UpgradeQueue`.
 - `scripts/package.sh` builds Release and writes a Thunderstore zip to `dist/`. It fails if the versions in `thunderstore/manifest.json`, `Plugin.cs` and the `.csproj` differ, or if `CHANGELOG.md` has no entry for that version. The package uses `thunderstore/README.md` (the store page), not this file.
 - `thunderstore/icon.svg` is the icon source. Regenerate the PNG with `rsvg-convert -w 256 -h 256 thunderstore/icon.svg -o thunderstore/icon.png`.
+- `src/UpgradeQueue/Assets/counter-icon.svg` is the HUD counter icon, embedded in the DLL. Regenerate with `rsvg-convert -w 96 -h 96 src/UpgradeQueue/Assets/counter-icon.svg -o src/UpgradeQueue/Assets/counter-icon.png`.
 
 Game and profile paths default to this dev machine. Override them with `-p:GamePath=... -p:ProfilePath=...` or a gitignored `Local.props`:
 

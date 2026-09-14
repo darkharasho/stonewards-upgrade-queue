@@ -31,9 +31,15 @@
     <Reference Include="Unity.InputSystem" HintPath="$(ManagedPath)/Unity.InputSystem.dll" Private="false" />
     <Reference Include="UnityEngine" HintPath="$(ManagedPath)/UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ManagedPath)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.ImageConversionModule" HintPath="$(ManagedPath)/UnityEngine.ImageConversionModule.dll" Private="false" />
     <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(ManagedPath)/UnityEngine.InputLegacyModule.dll" Private="false" />
     <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(ManagedPath)/UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="UnityEngine.UIElementsModule" HintPath="$(ManagedPath)/UnityEngine.UIElementsModule.dll" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Generated from Assets/counter-icon.svg; see README. -->
+    <EmbeddedResource Include="Assets/counter-icon.png" LogicalName="UpgradeQueue.counter-icon.png" />
   </ItemGroup>
 
   <Target Name="DeployToProfile" AfterTargets="Build" Condition="Exists('$(ProfilePath)/BepInEx/plugins')">

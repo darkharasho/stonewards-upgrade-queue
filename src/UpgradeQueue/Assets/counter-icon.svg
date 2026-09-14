@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="60 30 130 175">
+  <!-- The card stack from thunderstore/icon.svg, without the tile and badge, for the HUD counter. -->
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b2f25"/>
+      <stop offset="1" stop-color="#231b15"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset="1" stop-color="#c8862e"/>
+    </linearGradient>
+  </defs>
+  <g stroke-width="7" stroke-linejoin="round">
+    <rect x="86" y="38" width="100" height="136" rx="12" fill="url(#card)" stroke="#8a6230" transform="rotate(10 136 106)"/>
+    <rect x="78" y="46" width="100" height="136" rx="12" fill="url(#card)" stroke="#a9772f" transform="rotate(-6 128 114)"/>
+    <rect x="72" y="58" width="104" height="140" rx="12" fill="url(#card)" stroke="url(#gold)"/>
+  </g>
+  <g fill="none" stroke="url(#gold)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M98 128 L124 102 L150 128"/>
+    <path d="M98 164 L124 138 L150 164"/>
+  </g>
+</svg>

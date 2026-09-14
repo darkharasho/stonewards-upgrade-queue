@@ -20,8 +20,14 @@ namespace UpgradeQueue
     {
         private const float Margin = 24f;
 
+        private const float IconSize = 28f;
+        private const string IconResource = "UpgradeQueue.counter-icon.png";
+
         private static Button _button;
+        private static Label _label;
         private static Hud _attachedHud;
+        private static Texture2D _icon;
+        private static bool _iconLoadAttempted;
 
         public static void Update()
         {
@@ -45,8 +51,8 @@ namespace UpgradeQueue
             var text = inInventory
                 ? $"Open upgrade ({QueueState.PendingCount})"
                 : $"Upgrades: {QueueState.PendingCount}  [{Plugin.OpenQueueKey.Value}]";
-            if (_button.text != text)
-                _button.text = text;
+            if (_label.text != text)
+                _label.text = text;
 
             ApplyCorner(Plugin.CounterPosition.Value);
         }
@@ -58,7 +64,10 @@ namespace UpgradeQueue
             _button = new Button(() => QueuedUpgradeSession.RequestOpen()) { name = "UpgradeQueueCounter" };
             var s = _button.style;
             s.position = Position.Absolute;
-            s.paddingLeft = s.paddingRight = 12f;
+            s.flexDirection = FlexDirection.Row;
+            s.alignItems = Align.Center;
+            s.paddingLeft = 8f;
+            s.paddingRight = 12f;
             s.paddingTop = s.paddingBottom = 6f;
             s.marginLeft = s.marginRight = s.marginTop = s.marginBottom = 0f;
             s.fontSize = 18f;
@@ -70,9 +79,59 @@ namespace UpgradeQueue
             s.borderTopLeftRadius = s.borderTopRightRadius = s.borderBottomLeftRadius = s.borderBottomRightRadius = 8f;
             s.display = DisplayStyle.None;
 
+            var icon = LoadIcon();
+            if (icon != null)
+            {
+                var image = new VisualElement { name = "UpgradeQueueCounterIcon", pickingMode = PickingMode.Ignore };
+                image.style.width = image.style.height = IconSize;
+                image.style.marginRight = 8f;
+                image.style.backgroundImage = icon;
+                _button.Add(image);
+            }
+
+            _label = new Label { pickingMode = PickingMode.Ignore };
+            _label.style.marginLeft = _label.style.marginRight = _label.style.marginTop = _label.style.marginBottom = 0f;
+            _label.style.paddingLeft = _label.style.paddingRight = _label.style.paddingTop = _label.style.paddingBottom = 0f;
+            _button.Add(_label);
+
             hud.hudDocument.rootVisualElement.Add(_button);
             _button.BringToFront();
             _attachedHud = hud;
+        }
+
+        // Loaded once and kept across scene loads; the counter falls back to text only if it fails.
+        private static Texture2D LoadIcon()
+        {
+            if (_iconLoadAttempted)
+                return _icon;
+            _iconLoadAttempted = true;
+
+            using (var stream = typeof(HudCounter).Assembly.GetManifestResourceStream(IconResource))
+            {
+                if (stream == null)
+                {
+                    Plugin.Log.LogWarning($"Missing embedded resource {IconResource}");
+                    return null;
+                }
+                var bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+
+                var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+                {
+                    name = "UpgradeQueueCounterIcon",
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp,
+                    hideFlags = HideFlags.HideAndDontSave,
+                };
+                if (!texture.LoadImage(bytes))
+                {
+                    Plugin.Log.LogWarning("Could not decode the counter icon");
+                    Object.Destroy(texture);
+                    return null;
+                }
+                _icon = texture;
+            }
+            return _icon;
         }
 
         private static void ApplyCorner(CounterCorner corner)
