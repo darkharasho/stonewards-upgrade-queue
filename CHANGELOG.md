@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Fixed losing control of your character when the end-of-wave upgrade vote opened while a queued upgrade was on screen. The queued upgrade now closes first: a pick you already made is applied, otherwise it goes back in the queue with the same choices.
+
 ## 0.1.3
 
 - Closing a queued upgrade without picking keeps its choices, so reopening it is no longer a free reroll.

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace UpgradeQueue
 {
@@ -33,6 +34,15 @@ namespace UpgradeQueue
 
         private static readonly System.Reflection.MethodInfo EnableOptions =
             AccessTools.Method(typeof(RogueLikeUpgradeMenu), "EnableOptions");
+
+        private static readonly System.Reflection.MethodInfo ShowControllers =
+            AccessTools.Method(typeof(RogueLikeUpgradeMenu), "ShowControllers");
+
+        private static readonly System.Reflection.MethodInfo HandleInput =
+            AccessTools.Method(typeof(BaseMenu), "HandleInput");
+
+        private static readonly AccessTools.FieldRef<RogueLikeUpgradeMenu, RogueLikeUpgradeManager.UpgradeDraftChoice> SelectedUpgrade =
+            AccessTools.FieldRefAccess<RogueLikeUpgradeMenu, RogueLikeUpgradeManager.UpgradeDraftChoice>("selectedUpgrade");
 
         /// <summary>True from opening a queued upgrade until the menu closes after applying it.</summary>
         public static bool IsOpen { get; private set; }
@@ -90,6 +100,58 @@ namespace UpgradeQueue
             _savedChoices = _shownChoices;
             QueueState.Enqueue();
             Plugin.Log.LogInfo($"Closed queued upgrade without picking ({QueueState.PendingCount} pending)");
+        }
+
+        /// <summary>
+        /// Closes the open queued upgrade at once, before another menu takes over input. A pick
+        /// already made is applied; otherwise the upgrade goes back in the queue with its choices.
+        /// </summary>
+        public static void CloseNow(string reason)
+        {
+            if (!IsOpen || _menu == null)
+                return;
+
+            var menu = _menu;
+            StopCoroutine(menu, HideCoroutine);
+            StopCoroutine(menu, RerollCoroutine);
+            StopCoroutine(menu, AutoChooseCoroutine);
+
+            // A put-back already in progress has re-queued the upgrade.
+            var picked = menu.IsUpgradeSelected;
+            var alreadyPutBack = _puttingBack;
+            // Also stops chaining into the next queued upgrade while the other menu is up.
+            _puttingBack = true;
+            if (picked)
+            {
+                RogueLikeUpgradeManager.Instance.ApplyUpgrade(SelectedUpgrade(menu));
+            }
+            else if (!alreadyPutBack)
+            {
+                EnableOptions.Invoke(menu, new object[] { false });
+                _savedChoices = _shownChoices;
+                QueueState.Enqueue();
+            }
+
+            // HideUpgradeScreen without the animation. Input goes back to gameplay while this menu
+            // still owns it, so the next menu returns there when it closes.
+            ShowControllers.Invoke(menu, new object[] { false, 0f, 0f });
+            menu.rogueLikeUpgradeScreen.style.display = DisplayStyle.None;
+            Time.timeScale = 1f;
+            HandleInput.Invoke(menu, new object[] { false });
+            menu.Close();
+
+            Plugin.Log.LogInfo(picked
+                ? $"{reason}; applied the queued pick early"
+                : $"{reason}; put the queued upgrade back ({QueueState.PendingCount} pending)");
+        }
+
+        private static void StopCoroutine(RogueLikeUpgradeMenu menu, AccessTools.FieldRef<RogueLikeUpgradeMenu, Coroutine> field)
+        {
+            var coroutine = field(menu);
+            if (coroutine == null)
+                return;
+            menu.StopCoroutine(coroutine);
+            field(menu) = null;
         }
 
         /// <summary>
