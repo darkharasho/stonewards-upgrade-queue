@@ -17,12 +17,16 @@ namespace UpgradeQueue
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<KeyboardShortcut> OpenQueueKey;
         internal static ConfigEntry<bool> PauseInSolo;
+        internal static ConfigEntry<bool> ShowCounter;
+        internal static ConfigEntry<CounterCorner> CounterPosition;
+        internal static Plugin Instance;
 
         private Harmony _harmony;
 
         private void Awake()
         {
             Log = Logger;
+            Instance = this;
 
             Enabled = Config.Bind("General", "Enabled", true,
                 "Queue level-up upgrade popups instead of opening them immediately.");
@@ -30,6 +34,10 @@ namespace UpgradeQueue
                 "Key that opens the next queued upgrade.");
             PauseInSolo = Config.Bind("General", "PauseInSolo", true,
                 "Pause the game while picking a queued upgrade in single player. Never pauses in multiplayer.");
+            ShowCounter = Config.Bind("HUD", "ShowCounter", true,
+                "Show the queued upgrade counter. In the inventory it becomes a button that opens the next upgrade.");
+            CounterPosition = Config.Bind("HUD", "CounterPosition", CounterCorner.TopRight,
+                "Screen corner for the queued upgrade counter.");
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);
@@ -40,7 +48,9 @@ namespace UpgradeQueue
         private void Update()
         {
             if (Hotkey.WasPressed(OpenQueueKey.Value))
-                QueuedUpgradeSession.TryOpen();
+                QueuedUpgradeSession.RequestOpen();
+
+            HudCounter.Update();
         }
 
         private void OnDestroy()

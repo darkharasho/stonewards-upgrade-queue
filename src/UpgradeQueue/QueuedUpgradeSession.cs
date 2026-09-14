@@ -1,3 +1,4 @@
+using System.Collections;
 using HarmonyLib;
 using UnityEngine;
 
@@ -24,6 +25,32 @@ namespace UpgradeQueue
 
         /// <summary>Set while this class drives the menu, so the intercept patch lets it through.</summary>
         public static bool IsOpening { get; private set; }
+
+        /// <summary>
+        /// Opens the next queued upgrade from gameplay, or from the inventory by closing it first.
+        /// The inventory borrows the upgrade menu's stats and inventory panels, so the menu is
+        /// opened a frame after the inventory has handed them back.
+        /// </summary>
+        public static void RequestOpen()
+        {
+            if (IsOpen || QueueState.PendingCount == 0 || InputManager.Instance == null)
+                return;
+
+            if (InputManager.Instance.CurrentInputState == InputManager.InputState.Inventory && InventoryScreen.Instance != null)
+            {
+                InventoryScreen.Instance.CloseInventoryScreen();
+                Plugin.Instance.StartCoroutine(OpenNextFrame());
+                return;
+            }
+
+            TryOpen();
+        }
+
+        private static IEnumerator OpenNextFrame()
+        {
+            yield return null;
+            TryOpen();
+        }
 
         public static bool TryOpen()
         {
