@@ -23,6 +23,13 @@
     <DeployPath>$(ProfilePath)/BepInEx/plugins/darkharasho-UpgradeQueue</DeployPath>
   </PropertyGroup>
 
+  <!-- Without the game installed (CI), or with -p:UseRefs=true, build against the reference
+       assemblies from scripts/update-refs.sh. -->
+  <PropertyGroup Condition="'$(UseRefs)' == 'true' Or !Exists('$(ManagedPath)/Assembly-CSharp.dll')">
+    <ManagedPath>$(MSBuildThisFileDirectory)../../lib/refs</ManagedPath>
+    <BepInExCorePath>$(MSBuildThisFileDirectory)../../lib/refs</BepInExCorePath>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="BepInEx" HintPath="$(BepInExCorePath)/BepInEx.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(BepInExCorePath)/0Harmony.dll" Private="false" />
