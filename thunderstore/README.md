@@ -28,6 +28,7 @@ Edit in r2modman under **Config editor** → `com.darkharasho.stonewards.upgrade
 | Controls → OpenQueueKey | `U` | Key that opens the next queued upgrade. Modifiers work, e.g. `U + LeftShift`. |
 | HUD → ShowCounter | `true` | Show the queued upgrade counter and inventory button. |
 | HUD → CounterPosition | `TopRight` | `TopLeft`, `TopRight`, `BottomLeft` or `BottomRight`. |
+| HUD → CounterOffsetX / CounterOffsetY | `0` | Nudge the counter away from its corner, in UI pixels, if it overlaps other HUD elements. |
 
 ## Not affected
 

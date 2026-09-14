@@ -19,6 +19,8 @@ namespace UpgradeQueue
         internal static ConfigEntry<bool> PauseInSolo;
         internal static ConfigEntry<bool> ShowCounter;
         internal static ConfigEntry<CounterCorner> CounterPosition;
+        internal static ConfigEntry<int> CounterOffsetX;
+        internal static ConfigEntry<int> CounterOffsetY;
         internal static Plugin Instance;
 
         private Harmony _harmony;
@@ -38,6 +40,10 @@ namespace UpgradeQueue
                 "Show the queued upgrade counter. In the inventory it becomes a button that opens the next upgrade.");
             CounterPosition = Config.Bind("HUD", "CounterPosition", CounterCorner.TopRight,
                 "Screen corner for the queued upgrade counter.");
+            CounterOffsetX = Config.Bind("HUD", "CounterOffsetX", 0,
+                "Extra horizontal distance, in UI pixels, from the counter's corner. Negative moves it toward the edge.");
+            CounterOffsetY = Config.Bind("HUD", "CounterOffsetY", 0,
+                "Extra vertical distance, in UI pixels, from the counter's corner. Increase to move it clear of other HUD elements.");
 
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(Plugin).Assembly);

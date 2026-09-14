@@ -19,6 +19,8 @@ namespace UpgradeQueue
     internal static class HudCounter
     {
         private const float Margin = 24f;
+        // Kept tight to the screen edge so the counter clears the coin display under it.
+        private const float EdgeMargin = 6f;
 
         private const float IconSize = 28f;
         private const string IconResource = "UpgradeQueue.counter-icon.png";
@@ -139,10 +141,13 @@ namespace UpgradeQueue
             var s = _button.style;
             var top = corner == CounterCorner.TopLeft || corner == CounterCorner.TopRight;
             var left = corner == CounterCorner.TopLeft || corner == CounterCorner.BottomLeft;
-            s.top = top ? Margin : StyleKeyword.Auto;
-            s.bottom = top ? StyleKeyword.Auto : Margin;
-            s.left = left ? Margin : StyleKeyword.Auto;
-            s.right = left ? StyleKeyword.Auto : Margin;
+            // Positive offsets move the counter away from its corner.
+            var x = Margin + Plugin.CounterOffsetX.Value;
+            var y = EdgeMargin + Plugin.CounterOffsetY.Value;
+            s.top = top ? y : StyleKeyword.Auto;
+            s.bottom = top ? StyleKeyword.Auto : y;
+            s.left = left ? x : StyleKeyword.Auto;
+            s.right = left ? StyleKeyword.Auto : x;
         }
     }
 }
