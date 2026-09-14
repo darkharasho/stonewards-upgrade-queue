@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1
 
 - Queued upgrades open one after another until the queue is empty (`PickAllInARow`, on by default).
 - Pressing the open key before picking closes the screen and keeps the upgrade queued.
