@@ -7,7 +7,7 @@ A BepInEx/Harmony mod for Stonewards (a Unity game) that stops upgrade popups fr
 Requires the .NET SDK, Stonewards, and an r2modman profile with BepInExPack 5.4.2305 installed.
 
 - `dotnet build src/UpgradeQueue/UpgradeQueue.csproj` builds the plugin and copies it into the r2modman profile's `BepInEx/plugins/darkharasho-UpgradeQueue`.
-- `scripts/package.sh` builds Release and writes a Thunderstore zip to `dist/`.
+- `scripts/package.sh` builds Release and writes a Thunderstore zip to `dist/`. It fails if the versions in `thunderstore/manifest.json`, `Plugin.cs` and the `.csproj` differ, or if `CHANGELOG.md` has no entry for that version. The package uses `thunderstore/README.md` (the store page), not this file.
 
 Game and profile paths default to this dev machine. Override them with `-p:GamePath=... -p:ProfilePath=...` or a gitignored `Local.props`:
 
