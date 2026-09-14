@@ -98,6 +98,16 @@ namespace UpgradeQueue
             return true;
         }
 
+        /// <summary>
+        /// Forgets an open queued pick. Used when the run ends: the scene unloads with the menu,
+        /// so Close() may never run to end the session.
+        /// </summary>
+        public static void Reset()
+        {
+            IsOpen = false;
+            IsOpening = false;
+        }
+
         private static bool IsSolo()
         {
             return FirstPersonController.LocalPlayers.Count <= 1;
