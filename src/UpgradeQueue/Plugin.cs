@@ -11,7 +11,7 @@ namespace UpgradeQueue
     {
         public const string PluginGuid = "com.darkharasho.stonewards.upgradequeue";
         public const string PluginName = "UpgradeQueue";
-        public const string PluginVersion = "0.1.7";
+        public const string PluginVersion = "0.1.8";
 
         internal static ManualLogSource Log;
         internal static ConfigEntry<bool> Enabled;
@@ -54,7 +54,7 @@ namespace UpgradeQueue
                 "Play a sonar ping animation around the counter when a level-up is queued.", null,
                 new ConfigurationManagerAttributes { DispName = "Ping on new level-up", Order = 35 }));
             IdlePing = Config.Bind("HUD", "IdlePing", true, new ConfigDescription(
-                "Keep a faint ping repeating around the counter every few seconds while upgrades are queued.", null,
+                "Keep a faint ping repeating around the counter every 1.5 seconds while upgrades are queued.", null,
                 new ConfigurationManagerAttributes { DispName = "Ping while upgrades wait", Order = 34 }));
             PingIntensity = Config.Bind("HUD", "PingIntensity", 1f, new ConfigDescription(
                 "Strength of the ping. Scales how far the rings spread, how bright they are and how thick they are. 1 is the default.",

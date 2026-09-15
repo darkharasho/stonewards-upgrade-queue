@@ -32,9 +32,9 @@ namespace UpgradeQueue
         private const float PingSpread = 26f;
         private const float PingStartAlpha = 0.85f;
         private const float PingRingWidth = 2f;
-        // Reminder ping while upgrades are waiting: one fainter, shorter ring every few seconds.
-        private const float IdlePingInterval = 4f;
-        private const float IdlePingAlpha = 0.35f;
+        // Reminder ping while upgrades are waiting: a steady, fainter, shorter ring.
+        private const float IdlePingInterval = 1.5f;
+        private const float IdlePingAlpha = 0.45f;
         private const float IdlePingSpread = 0.6f;
         private const float CornerRadius = 8f;
         private static readonly Color Gold = new Color(1f, 0.82f, 0.45f);

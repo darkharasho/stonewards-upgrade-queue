@@ -6,7 +6,7 @@ Choices, odds and results are the game's own: the three options are rolled with 
 
 ## How to use
 
-- A counter in the corner of the HUD shows how many upgrades are waiting, e.g. `Upgrades: 3  [U]`. It gives a gentle sonar ping when a new level-up is queued, and a fainter one every few seconds while upgrades are waiting.
+- A counter in the corner of the HUD shows how many upgrades are waiting, e.g. `Upgrades: 3  [U]`. It gives a gentle sonar ping when a new level-up is queued, and keeps a steady, fainter pulse going while upgrades are waiting.
 - Press **U** to open your queued upgrades and pick as usual. After each pick the next one opens, until the queue is empty. Queued picks have no timer.
 - Press **U** again before picking to close the screen. That upgrade and the rest stay queued.
 - With the inventory open, the counter becomes an **Open upgrade** button you can click.
@@ -30,7 +30,7 @@ Edit in r2modman under **Config editor** → `com.darkharasho.stonewards.upgrade
 | Controls → OpenQueueKey | `U` | Opens queued upgrades, or closes the screen before you pick. Modifiers work, e.g. `U + LeftShift`. |
 | HUD → ShowCounter | `true` | Show the queued upgrade counter and inventory button. |
 | HUD → PingOnLevelUp | `true` | Sonar ping animation around the counter when a level-up is queued. |
-| HUD → IdlePing | `true` | Faint ping repeating every few seconds while upgrades are queued. |
+| HUD → IdlePing | `true` | Faint ping repeating every 1.5 seconds while upgrades are queued. |
 | HUD → PingIntensity | `1` | Ping strength from `0.25` (subtle) to `2` (bold): how far, bright and thick the rings are. |
 | HUD → CounterPosition | `TopRight` | `TopLeft`, `TopRight`, `BottomLeft` or `BottomRight`. |
 | HUD → CounterOffsetX / CounterOffsetY | `0` | Nudge the counter away from its corner, in UI pixels, if it overlaps other HUD elements. |
